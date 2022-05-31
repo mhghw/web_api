@@ -6,8 +6,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-
-	"github.com/teris-io/shortid"
 )
 
 var DataStoreInstance DataStore
@@ -42,8 +40,8 @@ func NewDataStore() {
 	}
 }
 
-func (s DataStore) AddData(username string, d any) (string, error) {
-	data := NewData(shortid.MustGenerate(), d)
+func (s DataStore) AddData(fileName, username string, d any) (string, error) {
+	data := NewData(fileName, d)
 
 	usernameIndex := fmt.Sprintf("%v/%v", s.workingDir, username)
 	filename := fmt.Sprintf("%v/%v.json", usernameIndex, data.Name)

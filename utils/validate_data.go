@@ -4,13 +4,14 @@ import (
 	"fmt"
 	"io/fs"
 	"log"
+	"os"
 	"path/filepath"
 
 	"github.com/xeipuuv/gojsonschema"
 )
 
-var tmpDir = "../tmp"
-var schemaDir = "../schema"
+var tmpDir = "./tmp"
+var schemaDir = "./schema"
 
 func InitSchemas() {
 	LoadersInstance = make(map[string]gojsonschema.JSONLoader)
@@ -22,7 +23,7 @@ var LoadersInstance Loaders
 type Loaders map[string]gojsonschema.JSONLoader
 
 func LoadSchema(name string) error {
-	abs, err := filepath.Abs(fmt.Sprintf("../schema/%v", name))
+	abs, err := filepath.Abs(fmt.Sprintf("./schema/%v", name))
 	if err != nil {
 		return fmt.Errorf("cannot get absolute path: %w", err)
 	}
@@ -72,7 +73,6 @@ func readAllSchemas() error {
 		if err != nil {
 			log.Fatal(err)
 		}
-		log.Println(name)
 		LoadersInstance[name] = gojsonschema.NewReferenceLoader(canonicalFormat(abs))
 		log.Println("loaded schema", name)
 	}
@@ -81,5 +81,17 @@ func readAllSchemas() error {
 }
 
 func canonicalFormat(name string) string {
-	return fmt.Sprintf("file://%v", name)
+	os := os.Getenv("GOOS")
+	if os == "" {
+		os = "linux"
+	}
+
+	switch os {
+	case "windows":
+		return fmt.Sprintf("file:///%v", name)
+	case "linux":
+		return fmt.Sprintf("file://%v", name)
+	default:
+		return fmt.Sprintf("file://%v", name)
+	}
 }

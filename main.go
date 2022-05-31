@@ -5,7 +5,9 @@ import (
 	"authorizor/middleware"
 	"authorizor/store"
 	"authorizor/utils"
+	"fmt"
 	"log"
+	"os"
 
 	"github.com/gin-gonic/gin"
 )
@@ -21,15 +23,19 @@ func main() {
 
 	s.POST("/sign_up", handler.SignUpHandler)
 	s.POST("/login", handler.LoginHandler)
-	s.POST("/send_validator", handler.SendValidatorHandler)
+	//s.POST("/send_validator", handler.SendValidatorHandler)
 
 	authorized := s.Group("/", middleware.Authenticator)
 	authorized.GET("/info", handler.GetInfoHandler)
-	authorized.POST("/send_data", handler.SendDataHandler)
+	authorized.POST("/send_data/:name", handler.SendDataHandler)
 	authorized.GET("/data/:name", handler.GetDataHandler)
 	authorized.GET("/user_data", handler.GetUserDataHandler)
 
-	s.Run(":8000")
+	var port string
+	if port = os.Getenv("PORT"); port == "" {
+		port = "8000"
+	}
+	s.Run(fmt.Sprintf(":%v", port))
 
 	// authorized := s.Group("/", middleware.Authenticate)
 	// authorized.POST("/login")

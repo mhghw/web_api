@@ -11,10 +11,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var schemaDir = "../schema"
+var schemaDirectory = "./schema"
+
+var schemaDir string
 
 func SendValidatorHandler(c *gin.Context) {
-	fileName := c.GetHeader("file_name")
+	fileName := c.GetHeader("file_type")
 	// body, err := ioutil.ReadAll(c.Request.Body)
 	// if err != nil {
 	// 	c.AbortWithError(500, fmt.Errorf("cannot read body: %w", err))
