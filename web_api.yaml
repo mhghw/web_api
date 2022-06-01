@@ -1,9 +1,43 @@
 openapi: 3.0.0
 info:
   title: A simple web api
-  description: This is a simple web api with authentication
-  version: 0.1.0
+  description: |
+    This is a simple web api with authentication
 
+    you can send your request using any clinet.
+
+    you have rate limit of 10 req/min and 3 concurrent connection
+
+    from same source.
+
+    Maximum request body size = 60KB
+
+    For using this api you first need to sign_up,get the token
+    put it on you request header with 'authorization' key
+    (like: 'authorization: YOUR_TOKEN')
+    then send your arbitary with POST method to /data/file_name
+    (NOTE:
+        1.you need to replace file_name with any file name you want to call your file
+        2.file_name is your file name and it will remain unique so choose it carefully
+    )
+
+    and get your data back with GET method on /data/file_name.
+
+
+
+    ---THIS IS NOT MENTIONED IN OPENAPI SPECIFICATION---
+    if you want to get all data of an account together,
+    you just need to set the auth token of the user
+    (use POST /log_in for that)
+    then call the GET /user_data to get all of your files.(if all files are bigger than 100KB the api won't response you)
+
+
+    If you had further questions contact me on telegram:
+    @akamicrohard
+  version: 0.1.0
+tags:
+  - name: TokenNotRequired
+  - name: TokenRequired
 paths:
   /sign_up:
     post:
@@ -11,6 +45,8 @@ paths:
       description: |
         This endpoint is used to create new user,
         you will get an access token in response.
+      tags:
+        - TokenNotRequired
       responses:
         "200":
           description: "OK"
@@ -38,6 +74,8 @@ paths:
       description: |
         This endpoint is used to manage login operation,
         if you never signed in, you should use /sign_up
+      tags:
+        - TokenNotRequired
       responses:
         "200":
           description: "OK"
@@ -57,8 +95,87 @@ paths:
           content:
             text/html:
               schema:
+                $ref: "#/components/schemas/errorMessage"
+            example: "error finding user with Username: test with error: not-found"
+        "403":
+          description: "Forbidden"
+          content:
+            text/html:
+            schema:
               $ref: "#/components/schemas/errorMessage"
             example: "error finding user with Username: test with error: not-found"
+  /info:
+    get:
+      summary: get user info
+      description: get user inforamation, this endpoint uses auth header to recognize user
+      tags:
+        - TokenRequired
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/info"
+        "404":
+          description: "user not found"
+          content:
+            text/html:
+              schema:
+                $ref: "#/components/schemas/errorMessage"
+            example: "user not found"
+  /data/{name}:
+    parameters:
+      - $ref: "#/components/parameters/name"
+    post:
+      summary: send arbitary json data
+      description: you can send arbitary json data to server
+      tags:
+        - TokenRequired
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                file_name:
+                  type: object
+                  properties:
+                    file_name:
+                      type: string
+        "400":
+          description: "can't bind json from body, or invliad json object"
+          content:
+            text/html:
+              schema:
+                $ref: "#/components/schemas/errorMessage"
+            example: "error binding json from body: invalid json object"
+        "500":
+          description: "internal server error"
+          content:
+            text/html:
+              schema:
+                $ref: "#/components/schemas/errorMessage"
+            example: "error writing file to temp: access denied"
+    get:
+      summary: get data
+      description: you can get you sent data with the given name
+      tags:
+        - TokenRequired
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              description: This is you arbitary json and has no schema
+        "404":
+          description: "Not Found"
+          content:
+            text/html:
+              schema:
+                $ref: "#/components/schemas/errorMessage"
+            example: "error finding file:%v error: not found"
+
 components:
   parameters:
     dataName:
@@ -90,13 +207,19 @@ components:
       maxLength: 50
       description: this field should match with password field
     token:
-      type: string
+      type: object
+      properties:
+        token:
+          type: string
       description: |
         This is the authentication token.
         If you want to send request to authorized endpoints, you MUST set token to 'authentication' header
     errorMessage:
-      type: string
-      maxLength: 256
+      type: object
+      properties:
+        error:
+          type: string
+          maxLength: 256
       description: A text message describing an error
     signUpForm:
       type: object
@@ -118,3 +241,12 @@ components:
           $ref: "#/components/schemas/user_name"
         password:
           $ref: "#/components/schemas/password"
+    info:
+      type: object
+      properties:
+        first_name:
+          $ref: "#/components/schemas/first_name"
+        last_name:
+          $ref: "#/components/schemas/last_name"
+        user_name:
+          $ref: "#/components/schemas/user_name"

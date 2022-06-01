@@ -27,7 +27,7 @@ func main() {
 
 	authorized := s.Group("/", middleware.Authenticator)
 	authorized.GET("/info", handler.GetInfoHandler)
-	authorized.POST("/send_data/:name", handler.SendDataHandler)
+	authorized.POST("/data/:name", handler.SendDataHandler)
 	authorized.GET("/data/:name", handler.GetDataHandler)
 	authorized.GET("/user_data", handler.GetUserDataHandler)
 
