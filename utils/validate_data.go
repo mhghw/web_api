@@ -10,7 +10,7 @@ import (
 	"github.com/xeipuuv/gojsonschema"
 )
 
-var tmpDir = "./tmp"
+var tmpDir = "./storage/tmp"
 var schemaDir = "./schema"
 
 func InitSchemas() {

@@ -16,7 +16,7 @@ import (
 	"github.com/teris-io/shortid"
 )
 
-var tempDirectory = "./tmp"
+var tempDirectory = "./storage/tmp"
 var dataStorageDirectory = "./store/storage/data"
 
 func init() {

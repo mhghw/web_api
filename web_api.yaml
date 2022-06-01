@@ -1,0 +1,120 @@
+openapi: 3.0.0
+info:
+  title: A simple web api
+  description: This is a simple web api with authentication
+  version: 0.1.0
+
+paths:
+  /sign_up:
+    post:
+      summary: sign up endpoint
+      description: |
+        This endpoint is used to create new user,
+        you will get an access token in response.
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/token"
+        "400":
+          description: "provided json is invalid, or confirm password does not match with password"
+          content:
+            text/html:
+              schema:
+                $ref: "#/components/schemas/errorMessage"
+              example: "passwords should match"
+        "500":
+          description: "internal server error, something went wrong when processing request"
+          content:
+            text/html:
+              schema:
+                $ref: "#/components/schemas/errorMessage"
+              example: "error inserting user with username: test with error: cannot create file"
+  /login:
+    post:
+      summary: login endpoint
+      description: |
+        This endpoint is used to manage login operation,
+        if you never signed in, you should use /sign_up
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/token"
+        "400":
+          description: "provided json is invalid"
+          content:
+            text/html:
+              schema:
+                $ref: "#/components/schemas/errorMessage"
+              example: "passwords should match"
+        "404":
+          description: "user not found"
+          content:
+            text/html:
+              schema:
+              $ref: "#/components/schemas/errorMessage"
+            example: "error finding user with Username: test with error: not-found"
+components:
+  parameters:
+    dataName:
+      description: |
+        This is the file name you should provide to server,
+        you can retrieve intended file with it's provided name.
+  schemas:
+    user_name:
+      type: string
+      minLength: 3
+      maxLength: 40
+      description: username is the unique id for each user
+    first_name:
+      type: string
+      maxLength: 30
+      description: firstName of the user
+    last_name:
+      type: string
+      maxLength: 30
+      description: lastName of the user
+    password:
+      type: string
+      minLength: 8
+      maxLength: 50
+      description: password of the user
+    confirm_password:
+      type: string
+      minLength: 8
+      maxLength: 50
+      description: this field should match with password field
+    token:
+      type: string
+      description: |
+        This is the authentication token.
+        If you want to send request to authorized endpoints, you MUST set token to 'authentication' header
+    errorMessage:
+      type: string
+      maxLength: 256
+      description: A text message describing an error
+    signUpForm:
+      type: object
+      properties:
+        user_name:
+          $ref: "#/components/schemas/user_name"
+        first_name:
+          $ref: "#/components/schemas/first_name"
+        last_name:
+          $ref: "#/components/schemas/last_name"
+        password:
+          $ref: "#/components/schemas/password"
+        confirm_password:
+          $ref: "#/components/schemas/confirm_password"
+    loginForm:
+      type: object
+      properties:
+        user_name:
+          $ref: "#/components/schemas/user_name"
+        password:
+          $ref: "#/components/schemas/password"
