@@ -126,7 +126,7 @@ paths:
             example: "user not found"
   /data/{name}:
     parameters:
-      - $ref: "#/components/parameters/name"
+      - $ref: "#/components/parameters/dataName"
     post:
       summary: send arbitary json data
       description: you can send arbitary json data to server
