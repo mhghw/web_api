@@ -38,6 +38,9 @@ info:
 tags:
   - name: TokenNotRequired
   - name: TokenRequired
+
+servers:
+  - url: https://mhgh.profile-digital.com
 paths:
   /sign_up:
     post:
@@ -47,6 +50,23 @@ paths:
         you will get an access token in response.
       tags:
         - TokenNotRequired
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                first_name:
+                  type: string
+                last_name:
+                  type: string
+                user_name:
+                  type: string
+                password:
+                  type: string
+                confirm_password:
+                  type: string
       responses:
         "200":
           description: "OK"
@@ -76,6 +96,17 @@ paths:
         if you never signed in, you should use /sign_up
       tags:
         - TokenNotRequired
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
       responses:
         "200":
           description: "OK"
@@ -105,7 +136,10 @@ paths:
               $ref: "#/components/schemas/errorMessage"
             example: "error finding user with Username: test with error: not-found"
   /info:
+    
     get:
+      security:
+        - auth: []
       summary: get user info
       description: get user inforamation, this endpoint uses auth header to recognize user
       tags:
@@ -125,13 +159,19 @@ paths:
                 $ref: "#/components/schemas/errorMessage"
             example: "user not found"
   /data/{name}:
+    security:
+      - auth: []
     parameters:
       - $ref: "#/components/parameters/dataName"
     post:
+      security:
+        - auth: []
       summary: send arbitary json data
       description: you can send arbitary json data to server
       tags:
         - TokenRequired
+      requestBody:
+        required: true
       responses:
         "200":
           description: "OK"
@@ -158,6 +198,8 @@ paths:
                 $ref: "#/components/schemas/errorMessage"
             example: "error writing file to temp: access denied"
     get:
+      security:
+        - auth: []
       summary: get data
       description: you can get you sent data with the given name
       tags:
@@ -177,6 +219,11 @@ paths:
             example: "error finding file:%v error: not found"
 
 components:
+  securitySchemes:
+    auth:
+      type: apiKey
+      in: header
+      name: authorization
   parameters:
     dataName:
       description: |
@@ -215,11 +262,7 @@ components:
         This is the authentication token.
         If you want to send request to authorized endpoints, you MUST set token to 'authentication' header
     errorMessage:
-      type: object
-      properties:
-        error:
-          type: string
-          maxLength: 256
+      type: string
       description: A text message describing an error
     signUpForm:
       type: object
