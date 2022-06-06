@@ -40,7 +40,7 @@ tags:
   - name: TokenRequired
 
 servers:
-  - url: http://localhost:8020
+  - url: https://mhgh.profile-digital.com
 paths:
   /sign_up:
     post:
