@@ -40,7 +40,7 @@ tags:
   - name: TokenRequired
 
 servers:
-  - url: https://mhgh.profile-digital.com
+  - url: http://localhost:8020
 paths:
   /sign_up:
     post:
@@ -55,18 +55,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                first_name:
-                  type: string
-                last_name:
-                  type: string
-                user_name:
-                  type: string
-                password:
-                  type: string
-                confirm_password:
-                  type: string
+              $ref: "#/components/schemas/signUpForm"
       responses:
         "200":
           description: "OK"
@@ -77,14 +66,14 @@ paths:
         "400":
           description: "provided json is invalid, or confirm password does not match with password"
           content:
-            text/html:
+            application/json:
               schema:
                 $ref: "#/components/schemas/errorMessage"
               example: "passwords should match"
         "500":
           description: "internal server error, something went wrong when processing request"
           content:
-            text/html:
+            application/json:
               schema:
                 $ref: "#/components/schemas/errorMessage"
               example: "error inserting user with username: test with error: cannot create file"
@@ -117,26 +106,25 @@ paths:
         "400":
           description: "provided json is invalid"
           content:
-            text/html:
+            application/json:
               schema:
                 $ref: "#/components/schemas/errorMessage"
               example: "passwords should match"
         "404":
           description: "user not found"
           content:
-            text/html:
+            application/json:
               schema:
                 $ref: "#/components/schemas/errorMessage"
             example: "error finding user with Username: test with error: not-found"
         "403":
           description: "Forbidden"
           content:
-            text/html:
-            schema:
-              $ref: "#/components/schemas/errorMessage"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/errorMessage"
             example: "error finding user with Username: test with error: not-found"
   /info:
-    
     get:
       security:
         - auth: []
@@ -154,15 +142,15 @@ paths:
         "404":
           description: "user not found"
           content:
-            text/html:
+            application/json:
               schema:
                 $ref: "#/components/schemas/errorMessage"
             example: "user not found"
   /data/{name}:
-    security:
-      - auth: []
     parameters:
-      - $ref: "#/components/parameters/dataName"
+      - name: name
+        in: path
+        required: true
     post:
       security:
         - auth: []
@@ -172,28 +160,31 @@ paths:
         - TokenRequired
       requestBody:
         required: true
+        content:
+          application/json:
+            schema:
+              type: object
       responses:
         "200":
           description: "OK"
           content:
             application/json:
               schema:
-                file_name:
-                  type: object
-                  properties:
-                    file_name:
-                      type: string
+                type: object
+                properties:
+                  file_name:
+                    type: string
         "400":
           description: "can't bind json from body, or invliad json object"
           content:
-            text/html:
+            application/json:
               schema:
                 $ref: "#/components/schemas/errorMessage"
             example: "error binding json from body: invalid json object"
         "500":
           description: "internal server error"
           content:
-            text/html:
+            application/json:
               schema:
                 $ref: "#/components/schemas/errorMessage"
             example: "error writing file to temp: access denied"
@@ -209,11 +200,19 @@ paths:
           description: "OK"
           content:
             application/json:
-              description: This is you arbitary json and has no schema
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    description: This is you arbitary json and has no schema
+                  name:
+                    type: string
+                    description: File name you provided to server
         "404":
           description: "Not Found"
           content:
-            text/html:
+            application/json:
               schema:
                 $ref: "#/components/schemas/errorMessage"
             example: "error finding file:%v error: not found"
@@ -224,35 +223,44 @@ components:
       type: apiKey
       in: header
       name: authorization
-  parameters:
-    dataName:
-      description: |
-        This is the file name you should provide to server,
-        you can retrieve intended file with it's provided name.
   schemas:
-    user_name:
-      type: string
-      minLength: 3
-      maxLength: 40
-      description: username is the unique id for each user
-    first_name:
-      type: string
-      maxLength: 30
-      description: firstName of the user
-    last_name:
-      type: string
-      maxLength: 30
-      description: lastName of the user
-    password:
-      type: string
-      minLength: 8
-      maxLength: 50
-      description: password of the user
-    confirm_password:
-      type: string
-      minLength: 8
-      maxLength: 50
-      description: this field should match with password field
+    signUpForm:
+      type: object
+      properties:
+        first_name:
+          type: string
+          maxLength: 30
+          description: firstName of the user
+        last_name:
+          type: string
+          maxLength: 30
+          description: lastName of the user
+        user_name:
+          type: string
+          minLength: 3
+          maxLength: 40
+          description: username is the unique id for each user
+        password:
+          type: string
+          minLength: 8
+          maxLength: 50
+          description: password of the user
+        confirm_password:
+          type: string
+          minLength: 8
+          maxLength: 50
+          description: this field should match with password field
+    loginForm:
+      user_name:
+        type: string
+        minLength: 3
+        maxLength: 40
+        description: username is the unique id for each user
+      password:
+        type: string
+        minLength: 8
+        maxLength: 50
+        description: password of the user
     token:
       type: object
       properties:
@@ -262,34 +270,17 @@ components:
         This is the authentication token.
         If you want to send request to authorized endpoints, you MUST set token to 'authentication' header
     errorMessage:
-      type: string
+      type: object
+      properties:
+        error:
+          type: string
       description: A text message describing an error
-    signUpForm:
-      type: object
-      properties:
-        user_name:
-          $ref: "#/components/schemas/user_name"
-        first_name:
-          $ref: "#/components/schemas/first_name"
-        last_name:
-          $ref: "#/components/schemas/last_name"
-        password:
-          $ref: "#/components/schemas/password"
-        confirm_password:
-          $ref: "#/components/schemas/confirm_password"
-    loginForm:
-      type: object
-      properties:
-        user_name:
-          $ref: "#/components/schemas/user_name"
-        password:
-          $ref: "#/components/schemas/password"
     info:
       type: object
       properties:
         first_name:
-          $ref: "#/components/schemas/first_name"
+          type: string
         last_name:
-          $ref: "#/components/schemas/last_name"
+          type: string
         user_name:
-          $ref: "#/components/schemas/user_name"
+          type: string

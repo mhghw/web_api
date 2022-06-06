@@ -20,6 +20,7 @@ func main() {
 	utils.InitSchemas()
 
 	s := gin.Default()
+	s.Use(middleware.CORSMiddleware())
 
 	s.POST("/sign_up", handler.SignUpHandler)
 	s.POST("/login", handler.LoginHandler)
